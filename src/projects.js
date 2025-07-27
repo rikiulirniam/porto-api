@@ -5,11 +5,11 @@ const db = require('../db');
 const router = express.Router();
 const auth = require('./middleware/authMiddleware');
 
-router.use(auth);
+// router.use(auth);
 
 // Konfigurasi penyimpanan file gambar
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
+  destination: (req, file, cb) => cb(null, 'src/img/'),
   filename: (req, file, cb) => {
     const uniqueName = Date.now() + path.extname(file.originalname);
     cb(null, uniqueName);
@@ -25,14 +25,14 @@ router.get('/', (req, res) => {
 });
 
 // Ambil proyek berdasarkan ID
-router.get('/:id', (req, res) => {
+router.get('/:id',auth, (req, res) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
   if (!project) return res.status(404).json({ error: 'Project not found' });
   res.json(project);
 });
 
 // Tambah proyek baru dengan upload gambar
-router.post('/', upload.single('image'), (req, res) => {
+router.post('/',auth,  upload.single('image'), (req, res) => {
   const { name, description, tech } = req.body;
   const image = req.file ? req.file.filename : null;
 
@@ -51,7 +51,7 @@ router.post('/', upload.single('image'), (req, res) => {
 });
 
 // Update proyek
-router.put('/:id', upload.single('image'), (req, res) => {
+router.put('/:id',auth,  upload.single('image'), (req, res) => {
   const { name, description, tech } = req.body;
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
   if (!project) return res.status(404).json({ error: 'Project not found' });
@@ -69,7 +69,7 @@ router.put('/:id', upload.single('image'), (req, res) => {
 });
 
 // Hapus proyek
-router.delete('/:id', (req, res) => {
+router.delete('/:id',auth,  (req, res) => {
   const stmt = db.prepare('DELETE FROM projects WHERE id = ?');
   const result = stmt.run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: 'Project not found' });

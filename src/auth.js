@@ -12,7 +12,7 @@ const SECRET = process.env.API_JWT
 router.post('/register', async (req, res) => {
   const { username, password, token } = req.body;
   if (!username || !password || !token)
-    return res.status(400).json({ error: 'Username dan password wajib diisi' });
+    return res.status(400).json({ message: 'Username dan password wajib diisi' });
   if(token !== process.env.API_TOKEN){
     return res.status(403).json({
         message : "Token tidak valid"
@@ -25,10 +25,10 @@ router.post('/register', async (req, res) => {
     res.status(201).json({ message: 'Registrasi berhasil' });
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return res.status(409).json({ error: 'Username sudah digunakan' });
+      return res.status(409).json({ message: 'Username sudah digunakan' });
     }
     console.log(err)
-    res.status(500).json({ error: 'Terjadi kesalahan saat registrasi' });
+    res.status(500).json({ message: 'Terjadi kesalahan saat registrasi' });
   }
 });
 
@@ -38,11 +38,11 @@ router.post('/login', async (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
 
   if (!user)
-    return res.status(401).json({ error: 'Username tidak ditemukan' });
+    return res.status(401).json({ message: 'Username tidak ditemukan' });
 
   const valid = await bcrypt.compare(password, user.password);
   if (!valid)
-    return res.status(401).json({ error: 'Password salah' });
+    return res.status(401).json({ message: 'Password salah' });
   console.log('JWT_SECRET:', process.env.API_JWT);
 
   const token = jwt.sign({ id: user.id, username: user.username }, SECRET, {
